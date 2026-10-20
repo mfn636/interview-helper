@@ -1,0 +1,419 @@
+{
+  "title": "DeepSeek Flash 计算机面试口语回答基准（20 题）",
+  "rubric": {
+    "5": "核心事实正确，直接回答问题，关键适用条件和边界清楚；不要求罗列所有参考点。",
+    "4": "核心结论正确，没有实质性事实错误；存在小遗漏或不够严谨的表述，但不影响主要理解。",
+    "3": "主要方向正确，但有明显误导、重要条件缺失，或未回答问题中一个关键部分，需要纠正后才能用于面试。",
+    "2": "包含重大事实错误或关键机制解释错误，虽有部分正确内容，但不足以形成可靠答案。",
+    "1": "大部分答案错误，或仅重复术语、基本没有回答问题。",
+    "0": "空回答、请求失败、完全答非所问；请求失败单独记为运行失败，不纳入成功回答的平均正确性分数。",
+    "evaluation_policy": "先依据题目所问判断，再使用 expected_points 核查核心机制。参考点是评审依据而非逐字必答清单；正确且适度简化的口语表达不因省略冷门细节扣分。critical_errors 表示需要重点检查的错误类型，并非字符串命中规则。区分事实错误、关键遗漏和风格问题；单段口语、无多余换行等风格指标独立记录，不替代正确性分数。sources 为评审参考来源。"
+  },
+  "questions": [
+    {
+      "id": "Q01",
+      "domain": "计算机网络 / TCP",
+      "question": "TCP 建立连接为什么通常需要三次握手，而不是两次？三次握手能彻底防止 SYN Flood 攻击吗？",
+      "expected_points": [
+        "双方交换并确认各自初始序列号，使双方能够确认发送和接收路径；第三次 ACK 让服务器知道客户端收到自己的 SYN/ACK。",
+        "第三次确认也有助于避免旧的、延迟到达的连接请求直接使服务器建立错误连接；不是单靠统计次数就能消除所有网络异常。",
+        "三次握手本身不保证防御 SYN Flood；半连接状态可能被大量占用，可使用 SYN cookies、限速等缓解。"
+      ],
+      "critical_errors": [
+        "声称两次握手足以让服务器确认客户端收到了服务器的初始序列号。",
+        "声称三次握手能够彻底防止 SYN Flood 或其他所有攻击。",
+        "把三次握手解释为确保后续应用数据永不丢失。"
+      ],
+      "sources": [
+        "https://www.rfc-editor.org/rfc/rfc9293",
+        "https://www.rfc-editor.org/rfc/rfc4987"
+      ]
+    },
+    {
+      "id": "Q02",
+      "domain": "计算机网络 / HTTPS",
+      "question": "浏览器访问 HTTPS 网站时，TLS 怎样确认服务器身份，并保护传输内容的保密性和完整性？有 HTTPS 就说明网站内容一定可信吗？",
+      "expected_points": [
+        "通过证书信任链、有效期、域名匹配等验证服务器身份，握手还需要证明服务器掌握相应私钥。",
+        "握手协商密钥，后续通常使用对称的认证加密保护数据，既保密又检测篡改；不能把证书验证、密钥协商和数据加密混为一谈。",
+        "TLS 保护传输并认证连接对端，不保证网站经营者诚实、页面信息真实或终端没有被攻破。"
+      ],
+      "critical_errors": [
+        "声称 HTTPS 通常用服务器 RSA 公钥加密全部业务数据。",
+        "声称加密本身就能完成服务器身份认证，或无需校验证书域名。",
+        "声称 HTTPS 网站的内容必然安全可信。"
+      ],
+      "sources": [
+        "https://www.rfc-editor.org/rfc/rfc8446",
+        "https://developer.mozilla.org/en-US/docs/Web/Security/Transport_Layer_Security"
+      ]
+    },
+    {
+      "id": "Q03",
+      "domain": "操作系统 / 进程与线程",
+      "question": "进程和线程在资源隔离、资源共享以及通信方式上有什么区别？同一进程内的线程既然共享内存，为什么还需要同步？",
+      "expected_points": [
+        "进程通常拥有独立虚拟地址空间和资源边界；同一进程的线程共享地址空间、堆等进程资源。",
+        "线程各自有执行上下文、寄存器和栈；进程也可以通过共享内存等 IPC 显式共享数据。",
+        "共享可变数据会产生竞争，需要锁、原子操作或其他同步机制保证所需的原子性、可见性与顺序。",
+        "线程切换和通信常较轻量，但具体成本依赖系统和任务，不能绝对化。"
+      ],
+      "critical_errors": [
+        "声称同一进程的线程分别拥有完全独立的堆地址空间。",
+        "声称进程之间完全不能共享内存。",
+        "声称共享内存天然保证线程安全或自动保证复合操作原子性。"
+      ],
+      "sources": [
+        "https://learn.microsoft.com/en-us/windows/win32/procthread/about-processes-and-threads",
+        "https://learn.microsoft.com/en-us/windows/win32/sync/synchronization"
+      ]
+    },
+    {
+      "id": "Q04",
+      "domain": "操作系统 / 死锁",
+      "question": "死锁的四个必要条件是什么？预防死锁、避免死锁，以及检测后解除死锁，分别有什么区别？",
+      "expected_points": [
+        "四个必要条件是互斥、占有并等待、不可剥夺、循环等待。",
+        "预防通过约束资源申请方式破坏至少一个必要条件，例如统一加锁顺序破坏循环等待。",
+        "避免根据资源需求与系统状态决定是否分配，保持安全状态；银行家算法是典型例子。",
+        "检测后恢复允许死锁发生，再检测并通过终止、回滚或在可行时抢占资源解除；超时可帮助工程恢复，但并非总能准确判定死锁。"
+      ],
+      "critical_errors": [
+        "把饥饿、活锁或一般等待直接等同于死锁。",
+        "把银行家算法描述为检测到死锁后才杀死进程的算法。",
+        "声称出现循环等待在任意多实例资源系统中都足以证明已死锁。"
+      ],
+      "sources": [
+        "https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html",
+        "https://pages.cs.wisc.edu/~remzi/OSTEP/"
+      ]
+    },
+    {
+      "id": "Q05",
+      "domain": "数据库 / MySQL InnoDB",
+      "question": "MySQL InnoDB 的可重复读隔离级别下，普通 SELECT 和 SELECT ... FOR UPDATE 分别怎样处理幻读？能不能笼统地说这个隔离级别下绝不会出现幻读相关现象？",
+      "expected_points": [
+        "普通一致性 SELECT 通常使用 MVCC 快照；在可重复读事务中，后续一致性读通常沿用首次一致性读建立的快照，因此看不到其他事务后来提交的新行。",
+        "SELECT ... FOR UPDATE 是锁定读，读取和锁定符合条件的当前记录；范围检索可通过 next-key lock 或 gap lock 阻止相关范围插入。",
+        "锁定范围取决于索引、查询条件和访问路径；命中唯一索引的唯一记录等情况不需要同样的范围锁。",
+        "快照读与锁定读或写操作混用、以及读取自身修改时存在不同可见性，不能把两套机制概括为所有场景都绝无幻读相关差异。"
+      ],
+      "critical_errors": [
+        "声称普通 SELECT 一律通过对范围加间隙锁来避免幻读。",
+        "声称 FOR UPDATE 和普通 SELECT 在可重复读下始终读取同一个旧快照。",
+        "不加条件地声称 InnoDB 可重复读在任意读写混用场景都完全等同于可串行化。"
+      ],
+      "sources": [
+        "https://dev.mysql.com/doc/refman/8.4/en/innodb-consistent-read.html",
+        "https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html",
+        "https://dev.mysql.com/doc/refman/8.4/en/innodb-next-key-locking.html"
+      ]
+    },
+    {
+      "id": "Q06",
+      "domain": "数据库 / B+ 树联合索引",
+      "question": "有一个 B+ 树联合索引 (a, b, c)，查询条件是 a = 1 AND b > 10 AND c = 3。你怎么解释最左前缀原则？这里 c 的条件是不是完全没用了？",
+      "expected_points": [
+        "联合索引按 a、b、c 的顺序排序，前导等值条件和随后范围条件通常能限定连续的索引扫描范围。",
+        "a 的等值和 b 的范围可用于主要范围定位；b 已是范围时，c 通常不能像前面的等值前缀那样继续缩小为一个连续范围。",
+        "c 仍须参与正确的结果过滤；在支持的情况下可通过索引条件下推提前过滤，或配合覆盖索引减少回表，不是完全失效。",
+        "最终访问方式由优化器及具体查询决定，可通过 EXPLAIN 检查。"
+      ],
+      "critical_errors": [
+        "声称范围条件后面的所有列都完全无用，甚至不参与过滤。",
+        "声称 c 总能与 a、b 一样完整地限制同一个连续索引范围。",
+        "把 SQL 中条件的书写顺序当作联合索引的字段顺序。"
+      ],
+      "sources": [
+        "https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html",
+        "https://dev.mysql.com/doc/refman/8.4/en/index-condition-pushdown-optimization.html",
+        "https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html"
+      ]
+    },
+    {
+      "id": "Q07",
+      "domain": "分布式 / Redis 缓存一致性",
+      "question": "使用 Redis 做旁路缓存时，为什么更新数据常采用先更新数据库、再删除缓存？这种顺序仍有什么不一致风险，你会怎样缓解？",
+      "expected_points": [
+        "数据库作为事实来源，提交更新后让旧缓存失效，后续缓存未命中时重新加载；避免直接双写缓存时多个更新发生乱序覆盖。",
+        "数据库成功但缓存删除失败会留下旧值；并发读可能先读到旧数据库数据，在更新和删除完成后又把旧值写回缓存。",
+        "可用可靠重试、事务消息或 outbox、CDC 等保证失效事件最终执行，并结合 TTL、版本校验、协调读写等控制不一致窗口；不要求回答列出全部方案。",
+        "延迟双删可缓解特定竞态，但依赖时序，不能作为强一致性的普遍证明；强一致需求需更强的设计或减少依赖缓存。"
+      ],
+      "critical_errors": [
+        "声称先更新数据库再删除缓存天然保证强一致性且没有竞态。",
+        "声称设置任意固定延迟后双删就能绝对保证缓存和数据库一致。",
+        "把 Redis 自身单条命令原子性说成可让 Redis 和关系数据库跨系统原子提交。"
+      ],
+      "sources": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside",
+        "https://redis.io/docs/latest/develop/use/client-side-caching/"
+      ]
+    },
+    {
+      "id": "Q08",
+      "domain": "分布式 / CAP",
+      "question": "CAP 为什么不能简单理解成任何时候都可以从三个属性里随便选两个？发生网络分区时，系统实际是在做什么取舍？",
+      "expected_points": [
+        "CAP 的限制是在网络分区发生时不能同时保证一致性和可用性；分区是需要面对的故障条件，不是通过宣传选择 CA 就能消失的属性。",
+        "一致性通常指线性一致性，可用性指每个到达非故障节点的请求都能获得满足规范的响应；不是泛指副本最终相同或响应足够快。",
+        "保持一致性可能拒绝或等待部分请求；保持分区两侧可用则可能允许暂时不一致，随后解决冲突。",
+        "无分区时可同时实现一致性和可用性，不同操作也可有不同策略。"
+      ],
+      "critical_errors": [
+        "声称 CAP 在任何运行状态下都只能实现三个属性中的两个。",
+        "把 CAP 的 C 直接等同于数据库 ACID 的完整性约束或最终一致性。",
+        "声称真实分布式系统只要选择放弃 P 就不再受网络分区影响。"
+      ],
+      "sources": [
+        "https://www.ibm.com/think/topics/cap-theorem"
+      ]
+    },
+    {
+      "id": "Q09",
+      "domain": "Python / GIL",
+      "question": "CPython 的 GIL 会怎样影响多线程？请区分常规启用 GIL 的构建和较新版本可选的 free-threaded 构建，并说说 I/O 密集与 CPU 密集任务该怎样选。",
+      "expected_points": [
+        "常规启用 GIL 的 CPython 中，同一时刻通常只有一个线程执行 Python 字节码；不能由此推导所有线程工作都不能并行。",
+        "等待 I/O 或部分原生扩展计算时可以释放 GIL；线程通常适合 I/O 并发，纯 Python CPU 密集任务常使用多进程或能释放 GIL 的实现。",
+        "CPython 3.13 起提供可选的 free-threaded 构建，支持禁用 GIL；普通构建与可选构建需要区分，扩展兼容性也会影响是否保持无 GIL。",
+        "GIL 不是应用层线程安全保证，共享状态和复合操作仍可能需要同步。"
+      ],
+      "critical_errors": [
+        "声称所有 Python 实现或所有 CPython 新版本都必然有 GIL。",
+        "声称 Python 3.13 起所有安装默认无 GIL。",
+        "声称 GIL 保证任何共享可变对象的复合业务操作线程安全。",
+        "声称启用 GIL 后任何原生扩展计算与 I/O 都绝不可能在线程间并行。"
+      ],
+      "sources": [
+        "https://docs.python.org/3/library/threading.html",
+        "https://docs.python.org/3/howto/free-threading-python.html",
+        "https://peps.python.org/pep-0703/"
+      ]
+    },
+    {
+      "id": "Q10",
+      "domain": "Python / asyncio",
+      "question": "asyncio 为什么能在一个线程里处理多个网络请求？如果在 async def 中直接调用 time.sleep 或运行很长的纯 Python 计算，会发生什么，应该怎样处理？",
+      "expected_points": [
+        "事件循环以协作式调度运行任务，任务在等待可挂起的异步 I/O 时让出执行权，使其他任务继续执行；并发不等于同时在多个 CPU 核执行。",
+        "async def 只定义协程，本身不会把同步阻塞函数自动变成异步；time.sleep 或长时间 CPU 计算会阻塞事件循环。",
+        "等待时使用 asyncio.sleep 或异步库；阻塞 I/O 可通过 asyncio.to_thread 或线程执行器移出事件循环。",
+        "对于启用 GIL 的 CPython 中纯 Python CPU 密集工作，多进程等方案更适合获得多核并行；搬到线程不保证加速。"
+      ],
+      "critical_errors": [
+        "声称只要函数写成 async def，内部所有同步代码就自动非阻塞。",
+        "声称单个事件循环靠在同一线程中同时执行多个 Python 指令实现多核计算。",
+        "声称 asyncio.to_thread 在普通 CPython 中必然能让纯 Python CPU 运算多核加速。"
+      ],
+      "sources": [
+        "https://docs.python.org/3/library/asyncio-task.html",
+        "https://docs.python.org/3/library/asyncio-dev.html"
+      ]
+    },
+    {
+      "id": "Q11",
+      "domain": "Java / HashMap",
+      "question": "Java 8 及后续常见 JDK 实现中，HashMap 怎样处理哈希冲突，链表什么时候可能变成红黑树？有了红黑树以后，它就线程安全了吗？",
+      "expected_points": [
+        "使用桶数组，冲突元素进入同一桶，通常先以链表组织，达到一定条件后转为红黑树以改善严重碰撞情况下的查找效率。",
+        "常见实现有 TREEIFY_THRESHOLD = 8 和 MIN_TREEIFY_CAPACITY = 64；桶内元素增多触发树化判断时，若数组容量不足通常优先扩容，不能简单说第八个元素进入任何桶就必然树化。",
+        "树化是性能策略，不提供并发访问的同步保障，HashMap 仍不是线程安全容器。",
+        "多线程并发修改可使用 ConcurrentHashMap 或适当的外部同步；不要求死记所有实现常量。"
+      ],
+      "critical_errors": [
+        "声称只要桶中出现 8 个元素就必然立即树化，无视容量和实现触发条件。",
+        "声称 Java 8 起 HashMap 因使用红黑树而线程安全。",
+        "声称 fail-fast 迭代检测能够替代同步保证线程安全。"
+      ],
+      "sources": [
+        "https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html",
+        "https://github.com/openjdk/jdk8u/blob/master/jdk/src/share/classes/java/util/HashMap.java"
+      ]
+    },
+    {
+      "id": "Q12",
+      "domain": "Java / JVM 垃圾回收",
+      "question": "JVM 判断一个对象是否可以回收，为什么通常讲从 GC Roots 出发的可达性分析，而不是简单引用计数？既然有 GC，Java 为什么还会内存泄漏？",
+      "expected_points": [
+        "从线程栈中的引用、静态字段等 GC Roots 出发追踪可达对象，不可达对象才可能被回收；对象的具体回收时机和引用类型还受收集器等机制影响。",
+        "单纯引用计数难以处理相互引用形成的孤立环；可达性分析能够识别不再从根可达的循环引用。",
+        "业务已不需要但仍被长生命周期对象、静态集合、监听器或线程本地变量等强引用的数据仍然可达，GC 无法替业务判定无用，因而会发生内存泄漏。",
+        "可通过移除引用、清理缓存和监听器、正确管理生命周期等解决；堆外或原生资源也需相应管理。"
+      ],
+      "critical_errors": [
+        "声称 JVM 主要依靠普通引用计数，因此所有循环引用都会泄漏。",
+        "声称有 GC 就绝不可能发生内存泄漏。",
+        "声称所有可达对象都会被 GC 自动根据业务需要回收。"
+      ],
+      "sources": [
+        "https://docs.oracle.com/en/java/javase/21/gctuning/",
+        "https://docs.oracle.com/en/java/javase/21/troubleshoot/troubleshooting-memory-leaks.html"
+      ]
+    },
+    {
+      "id": "Q13",
+      "domain": "JavaScript / 事件循环",
+      "question": "在浏览器主线程中执行下面这一段普通脚本，console.log 的输出顺序是什么，为什么？console.log('A'); setTimeout(() => console.log('B'), 0); Promise.resolve().then(() => { console.log('C'); Promise.resolve().then(() => console.log('D')); }); console.log('E');",
+      "expected_points": [
+        "输出顺序为 A、E、C、D、B。",
+        "当前脚本中的同步代码先执行，Promise.then 回调进入微任务队列，setTimeout 回调作为后续任务等待。",
+        "当前任务完成后的微任务检查点会继续处理新加入的微任务，因此 C 中安排的 D 在定时器 B 之前执行。",
+        "setTimeout 的 0 不表示立即执行或精确零延迟。"
+      ],
+      "critical_errors": [
+        "给出与 A、E、C、D、B 不符的确定输出顺序。",
+        "声称零延迟定时器会打断当前同步脚本立即执行。",
+        "声称 Promise.then 回调是与当前 JavaScript 同步代码并行执行的另一个线程。"
+      ],
+      "sources": [
+        "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide",
+        "https://html.spec.whatwg.org/multipage/webappapis.html#event-loops"
+      ]
+    },
+    {
+      "id": "Q14",
+      "domain": "JavaScript / 闭包",
+      "question": "浏览器里执行 for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }，为什么通常会输出三个 3？这和闭包有什么关系，怎样让它输出 0、1、2？",
+      "expected_points": [
+        "回调在循环结束后执行，var 让这些回调引用同一个函数作用域或全局作用域中的 i 绑定，此时其值已经为 3。",
+        "闭包保留对词法环境中变量绑定的访问，不是在定义函数时自动复制该变量的当前数值。",
+        "把 var 改为 let 可产生每次迭代独立的绑定；也可用立即调用函数或显式传参保存每次迭代的值。"
+      ],
+      "critical_errors": [
+        "声称原代码会稳定输出 0、1、2。",
+        "声称闭包默认拷贝定义时所有外部变量的值。",
+        "声称只把箭头函数换成普通函数就能修复共享 i 的问题。"
+      ],
+      "sources": [
+        "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures",
+        "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let"
+      ]
+    },
+    {
+      "id": "Q15",
+      "domain": "Node.js / 并发模型",
+      "question": "常说 Node.js 是单线程，为什么还能处理大量并发 I/O？如果接口里有一段耗时很长的 CPU 计算，改成 async 函数就能解决吗？",
+      "expected_points": [
+        "主要 JavaScript 回调通常在事件循环线程上执行，但 Node 运行时并非只有一个操作系统线程。",
+        "网络 I/O 通常利用操作系统的异步机制，文件系统、部分 DNS 和加密等工作可使用 libuv 工作线程池；完成后回调回到事件循环。",
+        "CPU 密集计算在事件循环上执行会阻塞其他请求；async 声明或 Promise 包装本身不会把计算迁移到别的线程。",
+        "可使用 worker_threads、多进程或独立计算服务处理 CPU 工作，并考虑任务粒度和通信开销。"
+      ],
+      "critical_errors": [
+        "声称 Node 进程始终只有一个操作系统线程。",
+        "声称每个网络连接都必须占用 libuv 线程池中的一个独立线程等待。",
+        "声称把 CPU 密集函数改为 async 就会自动多线程执行。"
+      ],
+      "sources": [
+        "https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop",
+        "https://nodejs.org/api/worker_threads.html"
+      ]
+    },
+    {
+      "id": "Q16",
+      "domain": "后端 / 幂等与事务",
+      "question": "一个创建订单的 POST 接口，客户端超时后可能重复提交。你会怎样保证同一次业务请求不会创建多张订单？只在代码里先查一下订单是否存在够不够？",
+      "expected_points": [
+        "POST 不天然幂等，但应用可以通过稳定的业务请求标识或幂等键定义同一次操作，并保存或复用首次处理的结果。",
+        "先查后插存在并发竞态，需要数据库唯一约束、原子操作等作为最终防线；幂等记录与订单创建应在正确的事务边界内协调。",
+        "应区分相同幂等键对应相同请求与不同参数、处理中和已完成等状态；提交成功但响应丢失时重试应能查回原结果。",
+        "事务失败或死锁时可按数据库语义重试完整操作，外部扣款、通知等副作用要另行幂等或可靠协调；不要求在短答里完整设计所有状态机。"
+      ],
+      "critical_errors": [
+        "声称先 SELECT 没有记录再 INSERT 就能在并发下天然避免重复订单。",
+        "声称 POST 请求无法在应用层实现幂等。",
+        "声称只加一个有过期时间的 Redis 锁就能无条件保证跨数据库与外部副作用严格只执行一次。"
+      ],
+      "sources": [
+        "https://www.rfc-editor.org/rfc/rfc9110",
+        "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        "https://docs.stripe.com/api/idempotent_requests"
+      ]
+    },
+    {
+      "id": "Q17",
+      "domain": "人工智能 / Transformer",
+      "question": "Transformer 的 self-attention 里 Q、K、V 分别起什么作用，点积为什么要除以根号 d_k？标准稠密 self-attention 的开销随序列长度怎样变化？",
+      "expected_points": [
+        "自注意力的 Q、K、V 来自同一输入序列的不同可学习线性投影；用 Q 与 K 的相似度得到注意力权重，再对 V 加权汇总。",
+        "典型计算为 softmax(QK 转置除以 sqrt(d_k))V，并可能加入因果或填充掩码。",
+        "缩放控制点积随维度增长的量级，避免 softmax 过度饱和、梯度变小；不是用于缩短序列。",
+        "标准稠密注意力的两两交互计算随序列长度 n 呈二次增长，固定维度下通常表述为 O(n²)；朴素实现的注意力矩阵存储也为二次，优化实现可降低实际内存开销而不消除稠密计算的二次量级。"
+      ],
+      "critical_errors": [
+        "把 Q、K、V 解释为互不相关的三个训练数据集，或声称它们必须完全相同。",
+        "声称缩放因子是 sqrt(序列长度) 或用于消除序列长度的二次复杂度。",
+        "声称标准稠密 self-attention 对序列长度天然只有线性计算复杂度。"
+      ],
+      "sources": [
+        "https://arxiv.org/abs/1706.03762",
+        "https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html"
+      ]
+    },
+    {
+      "id": "Q18",
+      "domain": "人工智能 / RAG",
+      "question": "RAG 系统回答错了，你怎么判断是检索环节还是生成环节的问题？加了知识库是否就不会产生幻觉，你会用哪些指标评估？",
+      "expected_points": [
+        "检查正确证据是否在原始文档、切分片段、召回候选以及最终送入模型的上下文中，区分资料缺失、检索遗漏、重排或截断问题。",
+        "若上下文含正确证据却仍答错，应检查是否正确利用证据、推理是否支持结论以及引用是否真实；资料过时、矛盾或干扰也会影响结果。",
+        "RAG 可降低但不能消灭幻觉，证据不足时应允许拒答或说明不确定性。",
+        "检索可评估 Recall@k、Hit@k、MRR 或 nDCG；生成可评估答案正确性、对证据的忠实性、引用支持度及拒答表现，并关注延迟和成本；需有合适的标注集与人工抽查。"
+      ],
+      "critical_errors": [
+        "声称使用向量数据库或 RAG 后模型绝不可能幻觉。",
+        "声称检索命中率高就能直接证明最终答案全部正确。",
+        "将答案与上下文一致直接等同于外部事实必然正确，忽略资料本身可能错误。"
+      ],
+      "sources": [
+        "https://arxiv.org/abs/2005.11401",
+        "https://docs.ragas.io/en/stable/concepts/metrics/"
+      ]
+    },
+    {
+      "id": "Q19",
+      "domain": "人工智能 / LoRA",
+      "question": "LoRA 和全参数微调的主要区别是什么？它为什么通常更省显存，是否意味着推理一定更快、效果一定和全参数微调相同？",
+      "expected_points": [
+        "全参数微调更新模型的大部分或全部参数；LoRA 通常冻结基座权重，通过低秩矩阵表示和训练选定层的权重增量。",
+        "训练参数、梯度及优化器状态显著减少，因此常节省训练显存和存储；基座权重和激活等仍占资源，量化是可另行结合的技术。",
+        "LoRA 权重在适用情况下可合并进原权重，使推理避免额外适配器计算；未合并时可能有额外计算，不能说必然更快。",
+        "效果取决于任务、数据、秩、目标层和训练设置，不保证始终等同或优于全参数微调。"
+      ],
+      "critical_errors": [
+        "声称 LoRA 会把整个基座模型删除或只保留两个小矩阵，因此运行不再需要原模型。",
+        "声称 LoRA 必须同时更新全部基座参数。",
+        "声称 LoRA 天然就是量化、保证推理更快或保证所有任务效果不变。"
+      ],
+      "sources": [
+        "https://arxiv.org/abs/2106.09685",
+        "https://huggingface.co/docs/peft/conceptual_guides/lora",
+        "https://huggingface.co/docs/peft/developer_guides/lora"
+      ]
+    },
+    {
+      "id": "Q20",
+      "domain": "机器学习 / 类别不均衡",
+      "question": "二分类中只有 1% 的样本是正类，如果模型全部预测为负类，accuracy 有多高，为什么这个结果没什么说服力？请解释 precision、recall、F1 和 macro-F1 的区别。",
+      "expected_points": [
+        "在该数据分布下全部预测为负类的 accuracy 为 99%，却没有识别任何正类，因此不能只凭准确率评价少数类任务。",
+        "正类 precision 为 TP/(TP+FP)，recall 为 TP/(TP+FN)，F1 为二者调和平均，或等价地 2TP/(2TP+FP+FN)。",
+        "此例正类 recall 为 0，precision 因没有预测正类而分母为 0，具体返回 0、NaN 等由评价工具约定；正类 F1 通常为 0。",
+        "macro-F1 是分别计算每个类别的 F1 后等权平均，不是先平均 precision 和 recall 再求一次 F1，也不是按样本数加权的 weighted-F1。",
+        "根据漏报误报代价选指标、阈值并检查混淆矩阵；若给出此例 macro-F1，二分类均纳入且常规零处理时约为 0.4975，而非 0 或 0.99。"
+      ],
+      "critical_errors": [
+        "声称 99% accuracy 证明模型准确识别了正类。",
+        "颠倒 precision 和 recall 的分母或含义。",
+        "声称 macro-F1 是按类别样本量加权，或是所有类别 precision、recall 的均值再求调和平均。",
+        "声称本例 macro-F1 必然等于正类 F1 的 0，忽略负类 F1。"
+      ],
+      "sources": [
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html",
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html",
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html"
+      ]
+    }
+  ]
+}

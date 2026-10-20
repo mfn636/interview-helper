@@ -1,32 +1,39 @@
-# Interview Helper · 计算机领域面试助手
+# Interview Helper
 
-面向**计算机领域面试与模拟练习**的 Python 桌面工具，覆盖 AI 应用开发、Python、Java、JavaScript、Node.js、全栈开发，以及数据库、网络、操作系统等常见技术面试范围。把一份简历、一份岗位 JD 和项目熟悉度放入对话上下文，让 AI 按真实面试的口语方式回答或提问。
+A Python desktop assistant for **computer science and software engineering interviews**, covering AI application development, Python, Java, JavaScript, Node.js, full-stack development, databases, networking, operating systems, and related technical topics.
 
-核心功能是**回答者与提问者一键切换**：同一套面试资料，既可以帮助候选人组织答案，也可以让 AI 扮演面试官逐轮追问。
+Its central feature is **switching between answering and asking questions**. Use the same resume, job description (JD), and project preferences to have the AI respond as a candidate or conduct a mock interview as an interviewer.
 
-| AI 角色 | 将转写内容视为 | AI 的输出 |
+The project has undergone **automated regression testing and two live, 20-question evaluation runs**. Findings from difficult cases have been collected and used to refine prompt constraints and response examples. The latest offline run passed **167 tests**. See [Tests, evaluation, and regression](#tests-evaluation-and-regression) for the results, scope, and retained regression material.
+
+## Answerer and interviewer modes
+
+| AI role | Treats incoming speech as | Produces |
 | --- | --- | --- |
-| **面试者 / 回答者**（默认） | 面试官的问题 | 直接给出单段口语答案，需要举例时优先使用熟悉且相关的项目 |
-| **面试官 / 提问者** | 候选人的发言 | 根据简历、JD 和前文提出一个核心问题或追问，不主动给出参考答案 |
+| **Candidate / Answerer** (default) | An interviewer's question | A direct, conversational answer in one paragraph, using familiar and relevant projects when appropriate |
+| **Interviewer / Questioner** | A candidate's statement or answer | One main question or follow-up based on the resume, JD, and conversation, without volunteering a model answer |
 
-对话区域顶部提供角色切换按钮，例如“面试者 → 切换为面试官”。切换会**暂停监听，并清空当前问答、转写和待处理队列**；已加载的简历、JD、准备状态及项目熟悉度顺序继续保留。点击“开始监听”即可按新角色继续。初始化或生成回复期间暂时不能切换；重启默认回到面试者。
+Use the role button above the conversation to switch modes. Switching **pauses listening and clears the conversation, transcription, and pending queue**. Loaded interview materials, readiness, and confirmed project preferences are retained. Start listening again to continue with the new role. Switching is disabled while initialization or a response is in progress; restarting defaults to Candidate mode.
 
-## 功能
+The current desktop UI, bundled prompts, example materials, and question bank are primarily in Chinese. This README uses English descriptions of the controls. The role prompts support explicit requests for English responses.
 
-- **系统声音实时转写**：从 Windows 的扬声器或耳机输出采集声音，经科大讯飞识别；实时显示文字，在停顿并收到完整结果后自动提交给 AI。
-- **深色悬浮窗**：黑底灰白字，支持置顶、不透明度调整、窗口缩放和复制最新回答 / 提问。
-- **面试资料直接入上下文**：简历和岗位 JD 分开存为 Markdown，每次请求携带资料、当前角色提示词、项目顺序和问答历史，无需向量知识库或数据库。
-- **先确认项目熟悉度**：AI 识别简历项目，用户按“最熟悉 → 最不熟悉”排序并确认，之后才进入准备完成状态。
-- **多轮对话与问题排队**：回答期间继续识别后续问题，按顺序处理；失败时支持重试或跳过。
-- **口语回答约束**：默认输出单段文字，提示词包含技术边界、事实依据和 few-shot 示例；区分真实经历与“我会如何做”的方案。
+## Features
 
-模型默认使用 **DeepSeek Flash**（`deepseek-flash`），关闭思考模式。语音识别使用科大讯飞**实时语音转写标准版（RTASR）**。
+- **Live system-audio transcription:** captures sound played through a Windows output device, transcribes it through iFLYTEK, and submits finalized speech after a pause.
+- **Dark floating window:** supports always-on-top mode, opacity adjustment, resizing, and copying the latest answer or question.
+- **Direct interview context:** stores one resume and one JD in separate Markdown files and includes them with the role prompt, project preferences, and conversation history. No vector database is required.
+- **Explicit project preferences:** detects projects from the resume and asks the user to confirm their order from most to least familiar before the interview starts.
+- **Multiple conversation turns:** queues finalized speech while the AI responds and supports retrying or skipping failed requests.
+- **Conversational output:** uses single-paragraph responses, factual boundaries, and few-shot examples to distinguish documented experience from hypothetical approaches.
+- **Tests and regression material:** includes deterministic tests, a fixed 20-question bank with scoring criteria, and prompt rules informed by reviewed failure cases.
 
-## 快速开始
+The default model is **DeepSeek Flash** (`deepseek-flash`), with thinking disabled. Speech recognition uses iFLYTEK's **standard real-time transcription service (RTASR)**.
 
-桌面语音功能需要 **Windows、Python 3.11 或 3.12**，以及可正常播放声音的输出设备。Python 安装应包含 Tkinter（官方 Windows 安装包通常自带）。
+## Quick start
 
-在 PowerShell 中执行：
+Desktop audio features require **Windows and Python 3.11 or 3.12**, an available audio output device, and Tkinter. Official Windows Python installers normally include Tkinter.
+
+Run in PowerShell:
 
 ```powershell
 git clone https://github.com/mfn636/interview-helper.git
@@ -38,27 +45,27 @@ Copy-Item context/resume.example.md context/resume.md
 Copy-Item context/job_description.example.md context/job_description.md
 ```
 
-使用 Python 3.12 时，将第一条 Python 命令里的 `-3.11` 改为 `-3.12`。上述复制命令用于首次安装；已有自己的配置和资料时，直接编辑原文件。
+For Python 3.12, replace `-3.11` with `-3.12`. The copy commands are for first-time setup; if you already have local configuration or materials, edit those files instead of replacing them.
 
-随后编辑以下三个文件：
+Fill in these UTF-8 files:
 
-| 文件 | 填写内容 |
+| File | Contents |
 | --- | --- |
-| `.env` | DeepSeek API Key、讯飞 RTASR 的 APPID 和 APIKey |
-| `context/resume.md` | 本次候选人的姓名、简历、项目经历和补充个人背景 |
-| `context/job_description.md` | 本次应聘的岗位名称、职责和要求 |
+| `.env` | Your DeepSeek API key and iFLYTEK RTASR APPID/APIKey |
+| `context/resume.md` | The candidate's name, resume, project experience, and additional background |
+| `context/job_description.md` | The target job title, responsibilities, and requirements |
 
-仓库内的两份 `.example.md` **完全虚构，仅供演示**。正式使用前请替换为本次面试的真实资料；三个配置 / 资料文件都使用 UTF-8 编码。
+The supplied `.example.md` files are **entirely fictional demonstrations**. Replace them with the materials for your interview before using the assistant with real personal background.
 
-启动悬浮窗：
+Launch the floating window:
 
 ```powershell
 .\.venv\Scripts\python.exe main.py
 ```
 
-## API 配置
+## API configuration
 
-在本地 `.env` 中填写自己的凭据，示例值不可直接使用：
+Put your own credentials in the local `.env` file. These placeholders are not valid credentials:
 
 ```dotenv
 API_KEY=your_deepseek_api_key
@@ -71,124 +78,179 @@ SPEECH_RMS_THRESHOLD=180
 SPEECH_MAX_SEGMENT_MS=50000
 ```
 
-讯飞两项凭据必须来自已开通**实时语音转写标准版（RTASR）**的同一个应用，**不需要 APISecret**。语音识别与 DeepSeek 对话分别调用各自的服务，额度和费用以对应平台为准。
+The iFLYTEK APPID and APIKey must belong to the same application with **standard RTASR** enabled. **APISecret is not required.** Speech recognition and model responses use separate services, each subject to its own quota and pricing.
 
-| 配置项 | 默认值 | 用途 |
+| Setting | Default | Purpose |
 | --- | --- | --- |
-| `SPEECH_SILENCE_MS` | `1500` | 连续静音达到多少毫秒后，尝试结束当前语音段 |
-| `SPEECH_RMS_THRESHOLD` | `180` | PCM16 音量检测阈值；小声音漏检时调低，背景声误触发时调高 |
-| `SPEECH_MAX_SEGMENT_MS` | `50000` | 长音频的内部连接轮转间隔；轮转会拼接文字，不因达到该时长就提前提交问题 |
+| `SPEECH_SILENCE_MS` | `1500` | Continuous silence duration before attempting to finish a speech segment |
+| `SPEECH_RMS_THRESHOLD` | `180` | PCM16 volume threshold; lower it for quiet speech or raise it to reduce background-noise triggers |
+| `SPEECH_MAX_SEGMENT_MS` | `50000` | Internal connection rollover interval for long audio; rollover joins transcripts and does not itself submit a question |
 
-## 一次面试的使用流程
+## Interview workflow
 
-1. **加载资料**：启动后读取当前角色提示词、简历和 JD，调用 AI 识别简历中的项目。
-2. **确认项目顺序**：在排序窗口选择项目，用“上移 / 下移”按熟悉度排列，再点击“确认顺序并准备”。一个项目也需确认；没有识别到项目时，先检查简历，或明确确认本次无项目。
-3. **等待准备完成**：AI 回复“我准备好了，面试人：xxx，面试岗位：xxx”后才可开始监听。点击“稍后确认”会暂缓准备，可从主窗口重新打开项目排序。
-4. **选择角色与声音来源**：默认面试者，可用对话区顶部按钮切换为面试官。选择需要转写的声音实际播放的输出设备，默认跟随 Windows 默认输出。
-5. **开始监听**：点击“开始监听”。临时转写会实时修正，停顿后完整文本进入待处理队列，由 AI 按当前角色回复。
+1. **Load materials.** Startup reads the role prompt, resume, and JD, then asks the model to identify projects in the resume.
+2. **Confirm project order.** Move projects up or down from most to least familiar, then confirm. A single project still needs confirmation. If no projects are detected, check the resume or explicitly confirm that the session should continue without projects.
+3. **Wait for readiness.** After confirmation, the AI returns a readiness message containing the candidate's name and target job title. Listening remains disabled until this succeeds. Deferring project confirmation keeps the interview unready; reopen the project dialog from the main window when needed.
+4. **Choose a role and audio output.** Candidate mode is the default. Use the role button to switch to Interviewer mode and select the output device playing the speech you want to transcribe.
+5. **Start listening.** Partial text updates live. Once a pause and finalized transcription are received, the text enters the queue and the AI responds in the selected role.
 
-两种角色都采集**所选系统输出的声音**，不会因为切换角色而改用麦克风。面试官模式下，应让候选人的发言通过所选输出设备播放；希望自己直接输入文字时，可使用下方的命令行模式或 Python 客户端。
+Both roles capture **the selected system audio output**. Switching roles does not change the source to a microphone. In Interviewer mode, the candidate's speech must be played through that output. For text-based practice, use the CLI or Python client below.
 
-项目顺序只在本次运行内保存，重启后重新确认。回答需要举例时，优先选熟悉且相关的项目；问题明确点名项目或延续上轮追问时，以问题所指项目为准。排序不会改写简历，也不应把 JD 要求当作已经做过的经历。
+Project preferences remain in memory for the current run. Explicit references to a project and ongoing follow-ups take precedence over the preference order. Preferences do not alter resume facts or turn JD requirements into claimed experience.
 
-准备完成前修改了资料，可点击“重新加载资料”，重新识别并确认项目；普通初始化重试会保留已确认的顺序。准备完成后修改资料，请重启程序。
+If materials change before readiness, use the reload-materials control to read them again and reconfirm the projects. An ordinary initialization retry preserves the confirmed order. After readiness, restart the program to change materials.
 
-### 监听与会话控制
+### Listening and conversation controls
 
-- **暂停监听**：停止采集与自动提交，舍弃尚未完成的语音片段，保留已完整转写的待答问题。正在生成的回复可以完成，恢复监听后继续处理队列。
-- **重试 / 跳过失败问题**：请求失败后暂停后续自动提交；失败问答不记入历史。暂停监听期间点击重试，会等恢复监听后再发送。
-- **新对话**：停止监听，清空问答、转写和队列，保留资料、项目顺序及当前角色。旧请求的迟到结果不会混入新对话。
-- **刷新设备**：更新系统输出设备列表；更换输出前先暂停监听。
-- **窗口操作**：拖动系统标题栏移动，拖动边缘缩放；支持置顶、65%～100% 不透明度及复制最新回复。关闭窗口会停止采集并退出。
+- **Pause listening:** stops capture and automatic submission, discards unfinished speech, and retains finalized queued input. An active AI response may finish; the queue resumes when listening restarts.
+- **Retry or skip:** a failed request pauses subsequent submissions. Failed exchanges are not added to history; retries wait for listening to resume if it is paused.
+- **New conversation:** stops listening and clears history, transcripts, and the queue while retaining materials, project order, and the current role. Late results from the old conversation are ignored.
+- **Refresh devices:** updates the output-device list. Pause listening before changing devices.
+- **Window controls:** drag the system title bar to move, resize from the edges, toggle always-on-top mode, adjust opacity from 65% to 100%, or copy the latest response. Closing the window stops capture.
 
-只查看设备列表，不开始录音：
+List output devices without recording:
 
 ```powershell
 .\.venv\Scripts\python.exe main.py --list-audio-devices
 ```
 
-## 命令行与 Python 调用
+## CLI and Python usage
 
-命令行模式使用手动文字输入，不启动声音采集，默认使用面试者角色：
+The CLI accepts typed input, uses Candidate mode by default, and does not capture audio:
 
 ```powershell
 .\.venv\Scripts\python.exe main.py --cli
 ```
 
-按提示输入完整项目编号顺序，例如 `2 1`；一个项目输入 `1`，无项目输入 `none`。`/clear` 清空历史并保留资料与项目顺序，`/exit` 退出。CLI 当前没有角色切换命令；交互式切换使用悬浮窗，也可在 Python 中指定角色：
+Enter a complete project order such as `2 1`; enter `1` for a single project or `none` when there are no projects. `/clear` clears the conversation while retaining materials and preferences; `/exit` quits. The CLI currently has no role-switch command. Use the desktop button or select a role through the Python client:
 
 ```python
 from deepseek_client import DeepSeekClient
 from loop import parse_project_order
 
-client = DeepSeekClient(role="interviewer")  # candidate 为回答者，interviewer 为提问者
+client = DeepSeekClient(role="interviewer")  # "candidate" selects the answerer
 projects = client.detect_projects()
 for number, name in enumerate(projects, 1):
     print(number, name)
 
-order = parse_project_order(input("按熟悉度输入全部编号，无项目输入 none："), projects)
+order = parse_project_order(input("Project numbers by familiarity, or none: "), projects)
 client.set_project_order(order)
 print(client.initialize())
-print(client.chat("请开始本次模拟面试。"))
+print(client.chat("Please start this mock interview in English."))
 ```
 
-`DeepSeekClient(resume_path="简历.md", jd_path="岗位.md")` 可分别指定资料路径。直接调用 `client.set_role("candidate")` 或 `client.set_role("interviewer")` 切换时，调用方需清空自行维护的历史；悬浮窗会自动处理。
+Use `DeepSeekClient(resume_path="my_resume.md", jd_path="my_job.md")` to specify different files. When calling `client.set_role("candidate")` or `client.set_role("interviewer")` directly, clear any conversation history maintained by your code. The desktop session handles this automatically.
 
-## 目录与提示词
+## Tests, evaluation, and regression
 
-```text
-main.py                            程序入口
-floating_window.py                 Tkinter 悬浮窗与角色切换
-floating_session.py                对话状态与后台任务
-deepseek_client.py                 DeepSeek 请求、项目识别与角色提示词
-project_order_dialog.py            项目熟悉度排序窗口
-speech_session.py                  语音会话
-system_audio.py                    Windows 系统声音采集
-xfyun_rtasr.py                     讯飞 RTASR 协议
-voice_controller.py                语音文本与 AI 问答队列
-loop.py                            命令行多轮对话
-prompts/interview_assistant.md      面试者 / 回答者提示词
-prompts/interview_interviewer.md    面试官 / 提问者提示词
-context/resume.example.md          虚构简历模板
-context/job_description.example.md 虚构 JD 模板
-.env.example                       不含真实密钥的配置模板
-benchmarks/questions.json          20 道计算机面试题与评分要点
-```
+Testing has included both **software behavior regression tests** and **reviewed model-answer regression on a fixed question set**. These measure different things: offline tests check application behavior; live evaluations examine generated answers and response times.
 
-两份角色提示词可独立修改。回答者提示词要求围绕“结论 → 原理 → 必要边界”自然口述，核对技术版本与适用条件，避免编造个人经历；面试官提示词要求结合岗位与发言逐轮提问、追问。客户端会合并多余换行，供显示、复制和后续对话使用，不硬截断回答。提示词约束不保证技术结论正确。
+### Automated regression tests
 
-## 测试与当前限制
+The latest offline run before the initial public release passed **167 tests**. Coverage includes:
 
-当前版本已有 **167 项离线测试通过**，覆盖客户端角色、项目确认、资料加载、语音协议、分段、队列和旧结果隔离。运行测试不调用真实 API：
+- Role-specific prompts, switching failures, conversation reset, and readiness preservation.
+- Separate resume/JD loading, project extraction validation, and explicit familiarity confirmation.
+- Speech authentication, transcript updates, audio segmentation, and connection rollover.
+- Queue ordering, pause/resume, retry/skip behavior, and rejection of stale results.
+- CLI project selection and benchmark setup validation.
+
+Run the suite locally without making live API calls:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -v
 ```
 
-系统声音 → RTASR → DeepSeek 的**真实语音全链路尚未稳定验证**。联调出现过握手超时、连接中断和服务端 `10700` 引擎错误；离线测试通过不等于所有设备和网络下都可稳定运行。异常断连或未稳定的文字不会自动提交给 AI。建议先用本机设备和自己的配置验证转写，再开始完整模拟面试。
+### Completed 20-question evaluation and regression
 
-20 题基准测试先可离线校验题库：
+On **October 18, 2026**, the candidate-answering prompt was evaluated on a fixed set of **20 computer science interview questions**, then tested again on the same questions after adding lightweight accuracy and formatting constraints. Both runs used DeepSeek Flash with thinking disabled, one independent response per question, the same interview materials, and the original scoring criteria.
+
+| Measure | Initial evaluation | Regression after prompt constraints |
+| --- | ---: | ---: |
+| Successful responses | 20/20 | 20/20 |
+| Review score | 83/100 | 94/100 |
+| Score on the five initially difficult questions | 15/25 | 21/25 |
+| Mean complete-response time | 2.99 s | 3.26 s |
+| P95 complete-response time | 3.54 s | 3.95 s |
+
+Scores came from **Codex review against the predefined rubric**, not from DeepSeek grading its own answers. P95 uses the nearest-rank method. Timings cover complete responses, exclude initialization, and are not time-to-first-token measurements.
+
+These are **historical results on known questions**, some of which informed the added constraints. They do not establish accuracy on unseen questions. The runs preceded later few-shot examples and role-switching changes, so **94/100 is not a verified score for the current release or Interviewer mode**.
+
+### Failure cases retained for regression
+
+The evaluation work followed a concrete feedback cycle:
+
+1. Run the fixed question bank and record answers, timing, and token usage.
+2. Review each answer against the existing criteria and identify difficult cases.
+3. Record the incorrect claim, its cause, a corrected explanation, and checks for future reruns.
+4. Add targeted prompt constraints and rerun the same 20 questions to check improvements and remaining errors.
+5. Retain difficult cases and add few-shot examples for conversational format, concise follow-ups, version-specific boundaries, and evidence-based personal experience.
+
+The retained archive contains **13 technical cases and two recurring formatting issues**, including resolved problems, remaining gaps, and new regressions. Reviewed topics include InnoDB snapshots and locking reads, composite indexes and index condition pushdown, HashMap treeification, attention complexity, and unsupported claims about a candidate's RAG work. The follow-up run still exposed issues, including personal-experience claims unsupported by the supplied materials. Those cases remain useful regression targets.
+
+The public regression material is retained in:
+
+- [The 20-question bank and scoring criteria](benchmarks/questions.json).
+- [The candidate prompt](prompts/interview_assistant.md), including technical boundary rules and four few-shot examples.
+- [The offline tests](test_floating_session.py) and other `test_*.py` files for repeatable application behavior checks.
+
+Detailed answer logs, review reports, and the original difficult-case archive stay local because they may contain personal interview context. They are excluded from Git. The archive is a maintenance record, not a runtime knowledge base. Later few-shot additions still require a new live evaluation; adding an example is not itself evidence that the model has passed a regression.
+
+### Reproduce the evaluation
+
+Validate the public question bank without API calls:
 
 ```powershell
 .\.venv\Scripts\python.exe benchmark.py --validate
 ```
 
-实际测评会调用 API，须显式确认项目熟悉度顺序。以下示例仅适用于识别出两个项目、且第二个更熟悉的情况：
+For a live run, first provide your own credentials and materials, then explicitly select the project familiarity order. This example applies only when two projects are detected and the second is more familiar:
 
 ```powershell
 .\.venv\Scripts\python.exe benchmark.py --project-order "2,1"
 ```
 
-编号必须覆盖本次识别出的全部项目；一个项目用 `1`，无项目用 `none`。结果写入 `benchmarks/results/`，记录完整响应耗时、回答及 Token 用量；当前接口为非流式，不测首 Token 延迟。答案正确性需按题库评分要点人工审阅，脚本不自动给出正确率或分数。
+Use every detected project exactly once; use `1` for one project or `none` for no projects. Results are saved under `benchmarks/results/`, including raw and normalized answers, newline counts, complete-response timing, token usage, and material fingerprints. Keep the question set, model settings, materials, and scoring criteria consistent when comparing runs. Review answer quality against the rubric separately: the script does not automatically grade technical correctness.
 
-## 私有资料与数据流
+## Project structure and prompts
 
-仓库仅提供代码、提示词和虚构示例。真实 `.env`、本次简历和 JD、原始资料与基准测试结果应留在本地；相应默认路径已加入 `.gitignore`。不要把真实密钥写进提示词、截图、Issue 或提交记录；自行新增的私有文件也应加入忽略规则。
+```text
+main.py                            Application entry point
+floating_window.py                 Tkinter UI and role switching
+floating_session.py                Conversation state and background work
+deepseek_client.py                 DeepSeek requests, projects, and role prompts
+interview_context.py               Resume and JD loading
+project_order_dialog.py            Project familiarity confirmation
+speech_session.py                  Speech-session lifecycle
+system_audio.py                    Windows system-audio capture
+xfyun_rtasr.py                     iFLYTEK RTASR protocol
+voice_controller.py                Transcription and response queue
+loop.py                            CLI conversation loop
+prompts/interview_assistant.md      Candidate / Answerer prompt
+prompts/interview_interviewer.md    Interviewer / Questioner prompt
+context/resume.example.md          Fictional resume example
+context/job_description.example.md Fictional JD example
+.env.example                       Credential-free configuration template
+benchmark.py                       Live evaluation runner and offline validation
+benchmarks/questions.json          Fixed questions and scoring criteria
+test_*.py                          Automated regression tests
+```
 
-开始监听后，所选输出设备上的声音会发送给讯飞识别，包括该设备播放的其他音频。转写文字、简历、JD、项目顺序和问答历史会发送给 DeepSeek。程序不将录音音频写入磁盘；问答历史和项目排序保存在内存中，退出后不保留。基准测试会另外保存回答结果。
+The two role prompts can be edited independently. The candidate prompt encourages a natural progression from conclusion to mechanism to necessary qualifications. The interviewer prompt asks one relevant question or follow-up at a time. The client normalizes extra line breaks without truncating the answer. Prompt constraints do not guarantee factual correctness.
 
-资料和历史目前不会自动截断；长对话可能增加延迟、费用或触及模型上下文限制，可使用“新对话”清空历史。涉及个人经历或关键技术结论时，请结合自己的事实与理解核对生成内容。
+## Current limitations
 
-## 许可证
+The complete **system audio -> RTASR -> DeepSeek** live path has not yet been consistently verified as stable. Integration testing encountered handshake timeouts, disconnections, and service error `10700`. Offline regression results and model-answer evaluations do not establish reliability across audio devices and networks. Test transcription with your own device and configuration before a full mock interview. Unfinished speech is not automatically submitted after a recognition failure.
 
-本项目采用 [MIT License](LICENSE)。
+Materials and conversation history are not automatically truncated. Long conversations can increase latency and cost or reach the model's context limit; start a new conversation to clear history.
+
+## Private data and service flow
+
+The repository contains code, prompts, and fictional examples. Real `.env` files, resumes, JDs, original attachments, evaluation outputs, and the private difficult-case archive are excluded through `.gitignore`. Keep credentials out of prompts, screenshots, issues, and commits; add ignore rules for any additional private files you create.
+
+While listening, audio from the selected output device is sent to iFLYTEK, including other audio played on that device. Transcribed text, interview materials, project preferences, and conversation history are sent to DeepSeek. The application does not save recordings to disk. Conversation history and project preferences remain in memory; the benchmark runner separately saves evaluation results.
+
+## License
+
+[MIT License](LICENSE).
